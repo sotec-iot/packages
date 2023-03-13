@@ -1,0 +1,21 @@
+{{- if true }}
+#
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  {{- $args := dict "dot" . "component" "device-registry-health-config" "name" "device-registry-health-config" }}
+  {{- include "hono.metadata" $args | nindent 2 }}
+spec:
+  {{- include "hono.registry.ingress.healthCheck" . | nindent 2 }}
+{{- end }}

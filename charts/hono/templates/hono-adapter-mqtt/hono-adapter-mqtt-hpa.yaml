@@ -1,0 +1,51 @@
+{{- if and .Values.adapters.mqtt.enabled .Values.adapters.mqtt.horizontalPodAutoscaler }}
+#
+# Copyright (c) 2019, 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mqtt-hpa
+spec:
+  minReplicas: 1
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 85
+  scaleTargetRef:
+    kind: Deployment
+    apiVersion: apps/v1
+    name: {{ .Release.Name }}-adapter-mqtt
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - periodSeconds: 120
+          type: Pods
+          value: 1
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - periodSeconds: 600
+          type: Pods
+          value: 1
+{{- end }}

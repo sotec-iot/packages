@@ -21,6 +21,14 @@ The Helm chart is being tested to successfully install on the four most recent K
 
 ## Installing the chart
 
+The following values have to be set in the values.yaml:
+
+- `googleProjectId`
+- `registry` and `tenant` under `deviceRegistryExample` > `jdbcBasedDeviceRegistry`.
+- `serviceName` under `cloudEndpoints` > `esp`.
+- `database` under `deviceCommunication` > `api`.
+- `host` and `staticIpName` under `externalIngress`.
+
 Helm can be used to install applications multiple times to the same cluster. Each such
 installation is called a *release* in Helm. Each release needs to have a unique name within
 a Kubernetes namespace.

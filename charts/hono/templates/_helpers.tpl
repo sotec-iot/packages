@@ -24,6 +24,20 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
+Adds Release name as prefix to service name.
+- "dot": the "." scope and
+- "name": the value to use for the "name" metadata property
+- "portName": the value to use for the "port.name" metadata property
+*/}}
+{{- define "hono.ingress.service" -}}
+service:
+  name: {{ printf "%s-%s" .dot.Release.Name .name | quote}}
+  port:
+    name: {{ .portName }}
+{{- end }}
+
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -243,8 +257,8 @@ The scope passed in is expected to be a dict with keys
 {{- if has "kafka" .dot.Values.messagingNetworkTypes -}}
   {{ include "hono.kafkaMessagingConfig" . }}
 {{- end -}}
-{{- if not ( or ( has "amqp" .dot.Values.messagingNetworkTypes ) ( has "kafka" .dot.Values.messagingNetworkTypes ) ) -}}
-  {{- required "Property messagingNetworkTypes MUST contain 'amqp' and/or 'kafka'" nil }}
+{{- if not ( or ( has "amqp" .dot.Values.messagingNetworkTypes ) ( has "kafka" .dot.Values.messagingNetworkTypes ) ( has "pubsub" .dot.Values.messagingNetworkTypes ) ) -}}
+  {{- required "Property messagingNetworkTypes MUST contain 'amqp' and/or 'kafka' and/or 'pubsub'" nil }}
 {{- end -}}
 {{- end }}
 
@@ -579,6 +593,138 @@ readinessProbe:
   successThreshold: {{ $probes.readinessProbe.successThreshold }}
   timeoutSeconds: {{ $probes.readinessProbe.timeoutSeconds }}
 {{- end }}
+
+
+{{/*
+Adds health checks for Hono's external ingress.
+*/}}
+{{- define "hono.registry.ingress.healthCheck" }}
+{{ $component := .Values.externalIngress.healthChecks.deviceRegistry.backend }}
+  healthCheck:
+    checkIntervalSec: {{ $component.checkIntervalSec}}
+    port: {{ .Values.cloudEndpoints.esp.port }}
+    type: {{ $component.type}}
+    requestPath: {{ $component.requestPath}}
+{{- end }}
+
+
+{{/*
+Adds google cloud's esp container.
+
+The scope passed in is expected to be a dict with keys
+- (mandatory) "backendPort": Backend API's http port
+- (mandatory) "espConfig": the esp's configuration properties as defined in .Values
+*/}}
+{{- define "hono.esp.container" }}
+{{- $esp := .espConfig -}}
+- name: esp
+  image: {{ $esp.image}}
+  args: [
+    "--listener_port=9443",
+    "--service={{ $esp.serviceName }}",
+    "--rollout_strategy=managed",
+    "--service_account_key=/etc/nginx/creds/{{$esp.serviceAccountKeyFileName }}",
+    "--healthz=/healthz",
+    "--generate_self_signed_cert",
+  ]
+  readinessProbe:
+    httpGet:
+      scheme: HTTPS
+      path: /healthz
+      port: 9443
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  ports:
+    - name: esp-https
+      containerPort: 9443
+      protocol: TCP
+  volumeMounts:
+    {{- with  $esp.volumeMounts }}
+      {{- . | toYaml | nindent 4 }}
+    {{- end }}
+{{- end }}
+
+
+
+
+{{/*
+Adds device communication container.
+
+The scope passed in is expected to be a dict with keys
+- (mandatory) "componentConfig": the component's configuration properties as defined in .Values
+*/}}
+{{- define "hono.deviceCommunication.container" }}
+{{- $component := .componentConfig -}}
+{{/*- name: {{ $component.api.name | quote}}*/}}
+- name: {{ $component.api.name }}
+  image: {{ $component.api.image }}
+  imagePullPolicy: Always
+  ports:
+  - name: http
+    containerPort: {{ $component.api.server.port }}
+    protocol: TCP
+    {{- with $component.api.probes }}
+    {{- . | toYaml | nindent 2 }}
+    {{- end }}
+  volumeMounts:
+    - mountPath: /creds
+      name: service-account-creds
+      readOnly: true
+{{- end }}
+
+{{/*
+Adds enviroment variables for device communication container.
+
+The scope passed in is expected to be a dict with keys
+- (mandatory) "componentConfig": the component's configuration properties as defined in .Values
+- (mandatory) "projectId": the Google Project ID as defined in .Values
+*/}}
+{{- define "hono.deviceCommunication.env" }}
+{{- $component := .componentConfig -}}
+{{- $projectId := .projectId -}}
+- name: COM_APP_VERSION
+  value: {{ $component.app.version  | quote}}
+- name: COM_PROJECT_ID
+  value: {{ $projectId  | quote}}
+- name: COM_OPENAPI_FILE_PATH
+  value: {{ $component.api.openapi.file | quote }}
+- name: COM_SERVER_HOST
+  value: {{ $component.api.server.url | quote }}
+- name: COM_SERVER_PORT
+  value: {{ $component.api.server.port | quote }}
+- name: COM_DB_TENANT_TABLE
+  value: {{ $component.api.tenant.table | quote }}
+- name: COM_DB_TENANT_COL_NAME
+  value: {{ $component.api.tenant.tenant_id_column | quote }}
+- name: COM_DB_DEVICE_REG_TABLE
+  value: {{ $component.api.device_registration.table | quote }}
+- name: COM_DB_DEVICE_REG_TENANT_COL_NAME
+  value: {{ $component.api.device_registration.tenant_id_column | quote }}
+- name: COM_DB_DEVICE_REG_DEVICE_COL_NAME
+  value: {{ $component.api.device_registration.device_id_column | quote }}
+- name: COM_POOL_MAX_SIZE
+  value: {{ $component.api.database.pool_max_size | quote }}
+- name: COM_DB_NAME
+  value: {{ $component.api.database.name | quote }}
+- name: COM_DB_HOST
+  value: {{ $component.api.database.host | quote }}
+- name: COM_DB_PORT
+  value: {{ $component.api.database.port | quote }}
+- name: COM_DB_USERNAME
+  value: {{ $component.api.database.username | quote }}
+- name: COM_DB_PASSWORD
+  value: {{ $component.api.database.password | quote }}
+- name: COM_SERVER_BASE_PATH
+  value: "{{ $component.api.server.paths.base }}"
+- name: COM_SERVER_LIVENESS_PATH
+  value: {{ $component.api.probes.livenessProbe.httpGet.path | quote }}
+- name: COM_SERVER_READINESS_PATH
+  value: {{ $component.api.probes.readinessProbe.httpGet.path | quote }}
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: "/creds/hono-cloud-endpoint-manager.json"
+{{- end }}
+
+
 
 {{/*
 Adds volume mounts to a component's container.

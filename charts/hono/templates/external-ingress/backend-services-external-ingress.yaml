@@ -1,0 +1,37 @@
+{{- if .Values.externalIngress.enabled  }}
+#
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  {{- $args := dict "dot" . "component" "external-https-ingress" "name" "external-https-ingress" }}
+  {{- include "hono.metadata" $args | nindent 2 }}
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: {{.Values.externalIngress.staticIpName}}
+    networking.gke.io/v1beta1.FrontendConfig: "redirect-to-https"
+spec:
+  defaultBackend:
+    {{- include "hono.ingress.service" (dict "dot" . "name" "service-device-management-ui" "portName" "http") | nindent 4 }}
+  tls:
+    - hosts:
+        - {{ .Values.externalIngress.host }}
+      secretName: {{.Values.externalIngress.ingressTlsSecret}}
+  rules:
+    - host: {{.Values.externalIngress.host}}
+      http:
+        paths:
+          - pathType: Prefix
+            path: /v1
+            backend:
+              {{- include "hono.ingress.service" (dict "dot" . "name" "service-esp" "portName" "https") | nindent 14 }}
+{{- end }}

@@ -103,7 +103,9 @@ serviceType:
 # - amqp: AMQP 1.0 based messaging. Also refer to the
 #     sections "amqpMessagingNetworkExample" and "adapters.amqpMessagingNetworkSpec".
 messagingNetworkTypes:
-- "kafka"
+  - "pubsub"
+
+googleProjectId:
 
 # useLegacyAmqpTraceContextFormat determines how OpenTelemetry trace context information
 # is stored in an AMQP 1.0 message sent to the AMQP Messaging Network. A "true" value here
@@ -242,7 +244,7 @@ adapters:
 
   amqp:
     # enabled indicates if Hono's AMQP 1.0 adapter should be deployed.
-    enabled: true
+    enabled: false
     # imageName contains the name (excluding registry)
     # of the container image to use for the AMQP adapter
     imageName: "eclipse/hono-adapter-amqp"
@@ -498,20 +500,20 @@ adapters:
 
   http:
     # enabled indicates if Hono's HTTP adapter should be deployed.
-    enabled: true
+    enabled: false
     # imageName contains the name (excluding registry)
     # of the container image to use for the HTTP adapter
-    imageName: "eclipse/hono-adapter-http"
+    imageName: "<your-google-project-id>/hono-adapter-http"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    # imageTag:
+    imageTag: "2.4.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
-    # containerRegistry:
+    containerRegistry: "gcr.io"
     # javaOptions contains options to pass to the JVM when starting
     # up the service
-    javaOptions: "-XX:MinRAMPercentage=80 -XX:MaxRAMPercentage=80"
+    javaOptions: "-XX:MinRAMPercentage=80 -XX:MaxRAMPercentage=80 -Dhono.credentials.requestTimeout=500"
     # cmdLineArgs contains additional arguments to be passed to the container's CMD.
     cmdLineArgs: []
     # quarkusConfigLocations contains resources that the Quarkus based variant of the component should read
@@ -529,7 +531,7 @@ adapters:
     quarkusConfigLocations:
     # quarkusLoggingProfile indicates at which level the Quarkus based variant of the component should log.
     # Supported values are "prod", "dev" or "trace"
-    quarkusLoggingProfile: "dev"
+    quarkusLoggingProfile: "prod"
     # [DEPRECATED: use probes instead] livenessProbeInitialDelaySeconds contains the value to use for the "initialDelaySeconds"
     # configuration property of the component's liveness probe.
     # The value of the top level "livenessProbeInitialDelaySeconds" property will be used if not set.
@@ -756,19 +758,21 @@ adapters:
   mqtt:
     # enabled indicates if Hono's MQTT 3.1.1 adapter should be deployed.
     enabled: true
+    # if true then a horizontal pod autoscaler will be deployed.
+    horizontalPodAutoscaler: true
     # imageName contains the name (excluding registry)
     # of the container image to use for the MQTT adapter
-    imageName: "eclipse/hono-adapter-mqtt"
+    imageName: "<your-google-project-id>/hono-adapter-mqtt"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    # imageTag:
+    imageTag: "2.4.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
-    # containerRegistry:
+    containerRegistry: "gcr.io"
     # javaOptions contains options to pass to the JVM when starting
     # up the service
-    javaOptions: "-XX:MinRAMPercentage=80 -XX:MaxRAMPercentage=80"
+    javaOptions: "-XX:MinRAMPercentage=15 -XX:MaxRAMPercentage=15 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=30 -Dhono.registration.responseCacheMaxSize=3500 -Dhono.credentials.requestTimeout=500 -Dhono.command.requestTimeout=5000 -Dhono.commandRouter.requestTimeout=5000"
     # cmdLineArgs contains additional arguments to be passed to the container's CMD.
     cmdLineArgs: []
     # quarkusConfigLocations contains resources that the Quarkus based variant of the component should read
@@ -786,7 +790,7 @@ adapters:
     quarkusConfigLocations:
     # quarkusLoggingProfile indicates at which level the Quarkus based variant of the component should log.
     # Supported values are "prod", "dev" or "trace"
-    quarkusLoggingProfile: "dev"
+    quarkusLoggingProfile: "prod"
     # [DEPRECATED: use probes instead] livenessProbeInitialDelaySeconds contains the value to use for the "initialDelaySeconds"
     # configuration property of the component's liveness probe.
     # The value of the top level "livenessProbeInitialDelaySeconds" property will be used if not set.
@@ -803,11 +807,11 @@ adapters:
     # for a description of the properties' semantics.
     resources:
       requests:
-        cpu: "150m"
-        memory: "300Mi"
+        cpu: "800m"
+        memory: "1536Mi"
       limits:
         cpu: "1"
-        memory: "512Mi"
+        memory: "1536Mi"
 
     svc:
       annotations: {}
@@ -852,7 +856,7 @@ adapters:
     #              The file names have been chosen deliberately to match those produced by the
     #              cert-manager operator (https://cert-manager.io/).
     # "none" - do not create keys nor mount an existing secret containing keys
-    tlsKeysSecret: "example"
+    tlsKeysSecret: "hono-mqtt-secret"
 
     # tlsTrustStoreConfigMap identifies the ConfigMap that contains the certificates which should
     # be used as the trust anchor by this component when it needs to authenticate server identities
@@ -887,14 +891,14 @@ authServer:
 
   # imageName contains the name (excluding registry)
   # of the container image to use for the Auth Server
-  imageName: "eclipse/hono-service-auth"
+  imageName: "<your-google-project-id>/hono-service-auth"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  # imageTag:
+  imageTag: "2.4.0-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
-  # containerRegistry:
+  containerRegistry: "gcr.io"
   # javaOptions contains options to pass to the JVM when starting
   # up the service
   javaOptions: "-XX:MinRAMPercentage=80 -XX:MaxRAMPercentage=80"
@@ -915,7 +919,7 @@ authServer:
   quarkusConfigLocations:
   # quarkusLoggingProfile indicates at which level the Quarkus based variant of the component should log.
   # Supported values are "prod", "dev" or "trace"
-  quarkusLoggingProfile: "dev"
+  quarkusLoggingProfile: "prod"
   # [DEPRECATED: use probes instead] livenessProbeInitialDelaySeconds contains the value to use for the "initialDelaySeconds"
   # configuration property of the component's liveness probe.
   # The value of the top level "livenessProbeInitialDelaySeconds" property will be used if not set.
@@ -932,10 +936,10 @@ authServer:
   # for a description of the properties' semantics.
   resources:
     requests:
-      cpu: "100m"
+      cpu: "50m"
       memory: "196Mi"
     limits:
-      cpu: "1"
+      cpu: "300m"
       memory: "256Mi"
 
   deployment:
@@ -1028,10 +1032,10 @@ deviceRegistryExample:
   # for additional configuration.
   # - jdbc: JDBC based device registry. Also refer to the section "jdbcBasedDeviceRegistry"
   # for additional configuration.
-  type: "embedded"
+  type: "jdbc"
 
   # addExampleData indicates whether example data is inserted after the device registry is deployed
-  addExampleData: true
+  addExampleData: false
 
   # javaOptions contains options to pass to the JVM when starting
   # up the service
@@ -1308,14 +1312,14 @@ deviceRegistryExample:
   jdbcBasedDeviceRegistry:
     # imageName contains the name (excluding registry)
     # of the container image for the example jdbc based device registry.
-    imageName: "eclipse/hono-service-device-registry-jdbc"
+    imageName: "<your-google-project-id>/hono-service-device-registry-jdbc"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    # imageTag:
+    imageTag: "2.4.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
-    # containerRegistry:
+    containerRegistry: "gcr.io"
     # cmdLineArgs contains additional arguments to be passed to the container's CMD.
     cmdLineArgs: []
     # quarkusConfigLocations contains resources that the Quarkus based variant of the component should read
@@ -1333,7 +1337,7 @@ deviceRegistryExample:
     quarkusConfigLocations:
     # quarkusLoggingProfile indicates at which level the Quarkus based variant of the component should log.
     # Supported values are "prod", "dev" or "trace"
-    quarkusLoggingProfile: "dev"
+    quarkusLoggingProfile: "prod"
     # [DEPRECATED: use probes instead] livenessProbeInitialDelaySeconds contains the value to use for the "initialDelaySeconds"
     # configuration property of the component's liveness probe.
     # The value of the top level "livenessProbeInitialDelaySeconds" property will be used if not set.
@@ -1348,6 +1352,12 @@ deviceRegistryExample:
     # Refer to https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
     # for a description of the properties' semantics.
     resources:
+      requests:
+        cpu: "300m"
+        memory: "384Mi"
+      limits:
+        cpu: "1"
+        memory: "1024Mi"
     # registry.jdbc contains the configuration properties for device registry
     # to connect to the database.
 
@@ -1457,14 +1467,14 @@ commandRouterService:
 
   # imageName contains the name (excluding registry)
   # of the container image to use for the Command Router service
-  imageName: "eclipse/hono-service-command-router"
+  imageName: "<your-google-project-id>/hono-service-command-router"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  # imageTag:
+  imageTag: "2.4.0-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
-  # containerRegistry:
+  containerRegistry: "gcr.io"
   # javaOptions contains options to pass to the JVM when starting
   # up the service
   javaOptions: "-XX:MinRAMPercentage=80 -XX:MaxRAMPercentage=80 -Djava.security.properties=/opt/hono/config/dns-cache-config.properties"
@@ -1485,7 +1495,7 @@ commandRouterService:
   quarkusConfigLocations:
   # quarkusLoggingProfile indicates at which level the Quarkus based variant of the component should log.
   # Supported values are "prod", "dev" or "trace"
-  quarkusLoggingProfile: "dev"
+  quarkusLoggingProfile: "prod"
   # [DEPRECATED: use probes instead] livenessProbeInitialDelaySeconds contains the value to use for the "initialDelaySeconds"
   # configuration property of the component's liveness probe.
   # The value of the top level "livenessProbeInitialDelaySeconds" property will be used if not set.
@@ -1503,10 +1513,10 @@ commandRouterService:
   resources:
     requests:
       cpu: "150m"
-      memory: "256Mi"
+      memory: "512Mi"
     limits:
       cpu: "1"
-      memory: "512Mi"
+      memory: "1024Mi"
 
   svc:
     annotations: {}
@@ -1635,7 +1645,7 @@ prometheus:
   # is configured to scrape Hono's components.
   # If you want to use an already existing Prometheus server, set this property to false
   # and set the "host" and "port" properties to the existing server's host name and port.
-  createInstance: false
+  createInstance: true
   # host contains the host name of an existing Prometheus server.
   # This property is used to configure a corresponding datasource in Grafana
   # if createInstance is set to false.
@@ -1684,7 +1694,7 @@ prometheus:
     enabled: false
 
 grafana:
-  enabled: false
+  enabled: true
   adminPassword: "admin"
 
   # do not run tests after deployment
@@ -1723,7 +1733,7 @@ kafkaMessagingClusterExample:
   # and one Zookeeper instance should be deployed. This minimal deployment is not suitable
   # for production purposes. To use an already existing Kafka cluster instead,
   # set this property to false and configure "adapters.kafkaMessagingSpec".
-  enabled: true
+  enabled: false
 
 # configuration of the example Kafka cluster to be deployed if "kafkaMessagingClusterExample.enabled" is "true"
 kafka:
@@ -1993,7 +2003,7 @@ dataGridExample:
   # enabled indicates whether the example data grid should be deployed and used.
   # The default value of this property is false, meaning that the Command Router service component
   # will use in-memory storage instead of a data-grid, if not configured otherwise.
-  enabled: false
+  enabled: true
   # imageName contains the name (including tag)
   # of the container image to use for the example data grid.
   imageName: "infinispan/server-native:13.0"
@@ -2029,10 +2039,10 @@ dataGridExample:
   # for a description of the properties' semantics.
   resources:
     requests:
-      cpu: "150m"
+      cpu: "15m"
       memory: "100Mi"
     limits:
-      cpu: "1"
+      cpu: "500m"
       memory: "200Mi"
 
   pod:
@@ -2050,7 +2060,7 @@ jaegerBackendExample:
 
   # enabled indicates whether the example Jaeger all-in-one
   # back end should be deployed and used.
-  enabled: false
+  enabled: true
   # allInOneImage contains the name (including tag)
   # of the container image to use for the example Jaeger back end.
   allInOneImage: "jaegertracing/all-in-one:1.50"
@@ -2077,11 +2087,11 @@ jaegerBackendExample:
   # for a description of the properties' semantics.
   resources:
     requests:
-      cpu: "150m"
-      memory: "256Mi"
+      cpu: "200m"
+      memory: "768Mi"
     limits:
       cpu: "1"
-      memory: "512Mi"
+      memory: "1024Mi"
   svc:
     annotations: {}
     loadBalancerIP:
@@ -2096,7 +2106,7 @@ jaegerBackendExample:
   # The default variables configure the container to keep up to 100000 traces in memory.
   env:
   - name: "MEMORY_MAX_TRACES"
-    value: "100000"
+    value: "10000"
 
   # extraVolumes contains additional kubernetes Volume definitions representing volumes
   # that can mounted into the container's file system.
@@ -2131,3 +2141,176 @@ otelCollectorAgentImage: "otel/opentelemetry-collector:0.86.0"
 # file defined in the ConfigMap and must contain an OTLP receiver using the gRPC protocol.
 # This property will only be used if "jaegerBackendExample.enabled" is set to "false".
 otelCollectorAgentConfigMap:
+
+# Google Cloud Endpoints settings
+cloudEndpoints:
+
+  enabled: true
+
+  # esp container settings
+  esp:
+    # using espv2
+    image: gcr.io/endpoints-release/endpoints-runtime:2
+    port: 9443
+    serviceName:
+    serviceAccountKeyFileName: hono-cloud-endpoint-manager.json
+    readinessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /healthz
+        port: 9443
+      initialDelaySeconds: 20
+      periodSeconds: 10
+    volumes:
+      - name: service-account-creds
+        secret:
+          secretName: service-account-creds
+    volumeMounts:
+      - mountPath: /etc/nginx/creds
+        name: service-account-creds
+        readOnly: true
+    # resources contains the container's requests and limits for CPU and memory
+    # as defined by the Kubernetes API.
+    # Refer to https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+    # for a description of the properties' semantics.
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+      limits:
+        cpu: "100m"
+        memory: "100Mi"
+
+
+# Device communication API settings
+deviceCommunication:
+
+  enabled: true
+
+  # General application settings
+  app:
+    name: Hono Device Communication API
+    version: v1
+    googleApplicationCredentials: /creds/hono-cloud-endpoint-manager.json
+
+  # Device communication API settings
+  api:
+
+    name: device-communication-api
+    version: 1.0.0
+    image: gcr.io/<your-google-project-id>/hono-device-communication:2.4.0-SNAPSHOT
+
+    # Device communication API endpoints
+    endpoints:
+      commands: /v1/commands
+      configs: /v1/configs
+      states: /v1/states
+
+    # Openapi file path
+    openapi:
+      file: api/hono-device-communication-v1.yaml
+
+    # Server settings and probes and volumes
+    server:
+      url: 0.0.0.0
+      port: 8080
+      paths:
+        base: /v1
+    probes:
+      livenessProbe:
+        httpGet:
+          path: /alive
+          port: 8080
+        periodSeconds: 60
+        failureThreshold: 3
+        initialDelaySeconds: 50
+        successThreshold: 1
+        timeoutSeconds: 3
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: 8080
+        periodSeconds: 10
+        failureThreshold: 3
+        initialDelaySeconds: 15
+        successThreshold: 1
+        timeoutSeconds: 5
+    volumes:
+      - name: service-account-creds
+        secret:
+          secretName: service-account-creds
+
+    # resources contains the container's requests and limits for CPU and memory
+    # as defined by the Kubernetes API.
+    # Refer to https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+    # for a description of the properties' semantics.
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1024Mi"
+
+    # Database settings
+    database:
+      pool_max_size: 5
+      name:
+      host:
+      port:
+      username:
+      password:
+
+    # Tenant table settings
+    tenant:
+      table: tenants
+      tenant_id_column: tenant_id
+
+    # Device registrations table settings
+    device_registration:
+      table: device_registrations
+      tenant_id_column: tenant_id
+      device_id_column: device_id
+
+
+# External ingress used for registry and communication APIs
+# Sends all the traffic to google's cloud endpoint esp container
+# If enabled the Google cloud endpoint should also be enabled
+externalIngress:
+
+  enabled: true
+
+  # The Name of kubernetes secret
+  ingressTlsSecret: ingress-secret-tls
+
+  # DNS name for Ingress
+  host:
+
+  # The name of the global static ip
+  staticIpName:
+
+  # GCP Backend configs for ingress-deviceRegistry healthCheck
+  healthChecks:
+    deviceRegistry:
+      backend:
+        healthCheck:
+          checkIntervalSec: 15
+          type: HTTPS
+          requestPath: /healthz
+
+managementUi:
+  enabled: true
+  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.4.0-SNAPSHOT
+  googleClientId:
+
+  # resources contains the container's requests and limits for CPU and memory
+  # as defined by the Kubernetes API.
+  # Refer to https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+  # for a description of the properties' semantics.
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+    limits:
+      cpu: "15m"
+      memory: "64Mi"

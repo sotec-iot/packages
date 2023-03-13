@@ -1,0 +1,44 @@
+{{- if .Values.cloudEndpoints.enabled }}
+#
+# Copyright (c) 2023 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+{{- $args := dict "dot" . "component" "service-esp" "name" "service-esp" "componentConfig" .Values.cloudEndpoints }}
+{{- $component :=  .Values.deviceCommunication }}
+{{- $esp :=  .Values.cloudEndpoints.esp }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+  {{- include "hono.metadata" $args | nindent 2 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "hono.matchLabels" $args | nindent 6 }}
+  template:
+    metadata:
+      {{- include "hono.metadata" $args | nindent 6 }}
+      annotations:
+        {{- include "hono.podAnnotations" $args | nindent 8 }}
+    spec:
+      volumes:
+        {{- with .Values.cloudEndpoints.esp.volumes }}
+          {{- . | toYaml | nindent 8 }}
+        {{- end }}
+      containers:
+          {{- include "hono.esp.container" (dict "backendPort" .Values.deviceCommunication.api.server.port "espConfig" $esp) | nindent 8 }}
+          resources:
+            {{- with .Values.cloudEndpoints.esp.resources }}
+              {{- . | toYaml | nindent 14 }}
+            {{- end }}
+
+  {{- end }}

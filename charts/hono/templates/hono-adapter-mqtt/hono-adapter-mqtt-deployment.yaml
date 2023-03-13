@@ -61,6 +61,8 @@ spec:
         env:
         - name: JDK_JAVA_OPTIONS
           value: {{ .Values.adapters.mqtt.javaOptions | quote }}
+        - name: QUARKUS_GOOGLE_CLOUD_PROJECT_ID
+          value: {{ .Values.googleProjectId }}
         - name: KUBERNETES_NAMESPACE
           valueFrom:
             fieldRef:

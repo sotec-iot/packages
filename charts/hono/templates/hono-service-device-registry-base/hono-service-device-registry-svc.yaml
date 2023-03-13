@@ -1,6 +1,6 @@
 {{- if .Values.deviceRegistryExample.enabled }}
 #
-# Copyright (c) 2019, 2020 Contributors to the Eclipse Foundation
+# Copyright (c) 2019, 2023 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -16,6 +16,11 @@ kind: Service
 metadata:
   {{- $args := dict "dot" . "component" "service-device-registry" "name" "service-device-registry" }}
   {{- include "hono.metadata" $args | nindent 2 }}
+  annotations:
+    cloud.google.com/app-protocols: '{"https": "HTTPS", "http": "HTTP"}'
+    {{- if .Values.externalIngress.enabled }}
+    cloud.google.com/backend-config: '{"default": "eclipse-hono-device-registry-health-config"}'
+    {{- end }}
 spec:
   ports:
   - name: amqps

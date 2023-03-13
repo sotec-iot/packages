@@ -93,6 +93,14 @@
           "intervalFactor": 1,
           "legendFormat": "max",
           "refId": "B"
+        },
+        {
+          "expr": "sum(jvm_memory_committed_bytes{host=~\"$instance\"})",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "committed",
+          "refId": "C"
         }
       ],
       "thresholds": [],

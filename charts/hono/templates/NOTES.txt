@@ -47,6 +47,7 @@ NAME                                       {{ "READY   STATUS    RESTARTS   AGE"
 {{ include "hono.fullname" . }}-service-device-registry-64d645dd9c-q9c5q  1/1     Running   0          5m51s
 {{- end }}
 {{- end }}
+{{ include "hono.fullname" . }}-service-device-communication-7b978        1/1     Running   0            53s
 
 Once all pods have reached the READY state, you can start using Hono.
 
