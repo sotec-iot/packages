@@ -626,6 +626,7 @@ The scope passed in is expected to be a dict with keys
     "--service_account_key=/etc/nginx/creds/{{$esp.serviceAccountKeyFileName }}",
     "--healthz=/healthz",
     "--generate_self_signed_cert",
+    "--underscores_in_headers",
   ]
   readinessProbe:
     httpGet:

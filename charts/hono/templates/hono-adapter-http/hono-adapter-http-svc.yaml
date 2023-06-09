@@ -31,7 +31,7 @@ spec:
     {{- include "hono.nodePort" $httpArgs | nindent 4 }}
   {{- end }}
   - name: https
-    port: 8443
+    port: 443
     protocol: TCP
     targetPort: https
     {{- $httpsArgs := dict "dot" . "port" 30443 }}

@@ -1,4 +1,4 @@
-{{- if and .Values.adapters.mqtt.enabled .Values.adapters.mqtt.horizontalPodAutoscaler.enabled }}
+{{- if and .Values.deviceRegistryExample.enabled ( eq .Values.deviceRegistryExample.type "jdbc" ) ( eq .Values.deviceRegistryExample.jdbcBasedDeviceRegistry.horizontalPodAutoscaler.enabled true ) }}
 #
 # Copyright (c) 2019, 2023 Contributors to the Eclipse Foundation
 #
@@ -14,16 +14,16 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: mqtt-hpa
+  name: device-registry-hpa
   namespace: {{ .Release.Namespace }}
 spec:
-  minReplicas: {{ .Values.adapters.mqtt.horizontalPodAutoscaler.minReplicas }}
-  maxReplicas: {{ .Values.adapters.mqtt.horizontalPodAutoscaler.maxReplicas }}
-  metrics: {{ toYaml .Values.adapters.mqtt.horizontalPodAutoscaler.metrics | nindent 4 }}
+  minReplicas: {{ .Values.deviceRegistryExample.jdbcBasedDeviceRegistry.horizontalPodAutoscaler.minReplicas }}
+  maxReplicas: {{ .Values.deviceRegistryExample.jdbcBasedDeviceRegistry.horizontalPodAutoscaler.maxReplicas }}
+  metrics: {{ toYaml .Values.deviceRegistryExample.jdbcBasedDeviceRegistry.horizontalPodAutoscaler.metrics | nindent 4 }}
   scaleTargetRef:
     kind: Deployment
     apiVersion: apps/v1
-    name: {{ .Release.Name }}-adapter-mqtt
+    name: {{ .Release.Name }}-service-device-registry
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 30

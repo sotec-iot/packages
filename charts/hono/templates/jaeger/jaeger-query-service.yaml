@@ -25,11 +25,11 @@ spec:
     - name: query-http
       port: 80
       protocol: TCP
-      targetPort: query-http
+      targetPort: 16686
   selector:
     {{- include "hono.matchLabels" $args | nindent 4 }}
-{{- if .Values.serviceType }}
-  type: {{ .Values.serviceType }}
+{{- if .Values.jaegerBackendExample.svc.type }}
+  type: {{ .Values.jaegerBackendExample.svc.type }}
 {{- else if and ( eq .Values.useLoadBalancer true ) ( ne .Values.platform "openshift" ) }}
   type: LoadBalancer
 {{- else }}

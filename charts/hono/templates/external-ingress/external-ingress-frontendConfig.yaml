@@ -16,6 +16,9 @@ kind: FrontendConfig
 metadata:
   name: redirect-to-https
 spec:
+  {{- if  .Values.externalIngress.sslPolicy }}
+  sslPolicy: {{ .Values.externalIngress.sslPolicy }}
+  {{- end }}
   redirectToHttps:
     enabled: true
     responseCodeName: TEMPORARY_REDIRECT

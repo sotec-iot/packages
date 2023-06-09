@@ -102,6 +102,7 @@ serviceType:
 #     sections "kafkaMessagingClusterExample" and "adapters.kafkaMessagingSpec"
 # - amqp: AMQP 1.0 based messaging. Also refer to the
 #     sections "amqpMessagingNetworkExample" and "adapters.amqpMessagingNetworkSpec".
+# - pubsub: Google Pub/Sub based messaging.
 messagingNetworkTypes:
   - "pubsub"
 
@@ -506,7 +507,7 @@ adapters:
     imageName: "<your-google-project-id>/hono-adapter-http"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.4.0-SNAPSHOT"
+    imageTag: "2.5.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -597,7 +598,7 @@ adapters:
     #              The file names have been chosen deliberately to match those produced by the
     #              cert-manager operator (https://cert-manager.io/).
     # "none" - do not create keys nor mount an existing secret containing keys
-    tlsKeysSecret: "example"
+    tlsKeysSecret: "hono-http-secret"
 
     # tlsTrustStoreConfigMap identifies the ConfigMap that contains the certificates which should
     # be used as the trust anchor by this component when it needs to authenticate server identities
@@ -758,14 +759,12 @@ adapters:
   mqtt:
     # enabled indicates if Hono's MQTT 3.1.1 adapter should be deployed.
     enabled: true
-    # if true then a horizontal pod autoscaler will be deployed.
-    horizontalPodAutoscaler: true
     # imageName contains the name (excluding registry)
     # of the container image to use for the MQTT adapter
     imageName: "<your-google-project-id>/hono-adapter-mqtt"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.4.0-SNAPSHOT"
+    imageTag: "2.5.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -812,6 +811,25 @@ adapters:
       limits:
         cpu: "1"
         memory: "1536Mi"
+
+    horizontalPodAutoscaler:
+      # if true then a horizontal pod autoscaler will be deployed.
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 85
 
     svc:
       annotations: {}
@@ -894,7 +912,7 @@ authServer:
   imageName: "<your-google-project-id>/hono-service-auth"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  imageTag: "2.4.0-SNAPSHOT"
+  imageTag: "2.5.0-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -1315,7 +1333,7 @@ deviceRegistryExample:
     imageName: "<your-google-project-id>/hono-service-device-registry-jdbc"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.4.0-SNAPSHOT"
+    imageTag: "2.5.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -1358,8 +1376,25 @@ deviceRegistryExample:
       limits:
         cpu: "1"
         memory: "1024Mi"
-    # registry.jdbc contains the configuration properties for device registry
-    # to connect to the database.
+
+    horizontalPodAutoscaler:
+      # if true then a horizontal pod autoscaler will be deployed.
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 90
 
     # The configMap to get additional environment variables from for this device registry.
     envConfigMap:
@@ -1375,6 +1410,8 @@ deviceRegistryExample:
       priorityClassName: ""
       affinity: {}
 
+    # registry.jdbc contains the configuration properties for device registry
+    # to connect to the database.
     registry:
       jdbc:
         # the jdbc properties for read-only operations
@@ -1470,7 +1507,7 @@ commandRouterService:
   imageName: "<your-google-project-id>/hono-service-command-router"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  imageTag: "2.4.0-SNAPSHOT"
+  imageTag: "2.5.0-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -2094,6 +2131,7 @@ jaegerBackendExample:
       memory: "1024Mi"
   svc:
     annotations: {}
+    type: ClusterIP
     loadBalancerIP:
 
   pod:
@@ -2198,7 +2236,7 @@ deviceCommunication:
 
     name: device-communication-api
     version: 1.0.0
-    image: gcr.io/<your-google-project-id>/hono-device-communication:2.4.0-SNAPSHOT
+    image: gcr.io/<your-google-project-id>/hono-device-communication:2.5.0-SNAPSHOT
 
     # Device communication API endpoints
     endpoints:
@@ -2298,9 +2336,12 @@ externalIngress:
           type: HTTPS
           requestPath: /healthz
 
+  # Can be used to select a different SSL policy then the GCP default
+  # sslPolicy: hono-ingress
+
 managementUi:
   enabled: true
-  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.4.0-SNAPSHOT
+  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.5.0-SNAPSHOT
   googleClientId:
 
   # resources contains the container's requests and limits for CPU and memory
