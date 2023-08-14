@@ -1748,6 +1748,28 @@ grafana:
     targetPort: 3000
     annotations: {}
 
+  ingress:
+    enabled: false
+    annotations:
+      kubernetes.io/ingress.global-static-ip-name:
+      networking.gke.io/v1beta1.FrontendConfig: "redirect-to-https"
+    hosts: []
+    tls:
+      - secretName:
+
+  grafana.ini:
+    database:
+      # Supported types are mysql, postgres and sqlite3
+      type:
+      host:
+      name:
+      user:
+      password:
+      ssl_mode: disable
+
+  persistence:
+    enabled: true
+
   ## Sidecars that collect the configmaps with specified label and stores the included files them into the respective folders
   ## Requires at least Grafana 5 to work and can't be used together with parameters dashboardProviders, datasources and dashboards
   sidecar:
