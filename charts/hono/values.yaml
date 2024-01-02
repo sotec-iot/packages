@@ -507,7 +507,7 @@ adapters:
     imageName: "<your-google-project-id>/hono-adapter-http"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.5.2-SNAPSHOT"
+    imageTag: "2.6.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -764,7 +764,7 @@ adapters:
     imageName: "<your-google-project-id>/hono-adapter-mqtt"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.5.2-SNAPSHOT"
+    imageTag: "2.6.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -913,7 +913,7 @@ authServer:
   imageName: "<your-google-project-id>/hono-service-auth"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  imageTag: "2.5.2-SNAPSHOT"
+  imageTag: "2.6.0-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -1334,7 +1334,7 @@ deviceRegistryExample:
     imageName: "<your-google-project-id>/hono-service-device-registry-jdbc"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.5.2-SNAPSHOT"
+    imageTag: "2.6.0-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -1524,7 +1524,7 @@ commandRouterService:
   imageName: "<your-google-project-id>/hono-service-command-router"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  imageTag: "2.5.2-SNAPSHOT"
+  imageTag: "2.6.0-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -2209,7 +2209,7 @@ jaegerBackendExample:
 # to use for the OpenTelemetry collector agent sidecar containers.
 # These containers are deployed with Hono's components if the example Jaeger all-in-one
 # deployment is disabled and "otelCollectorAgentConfigMap" is not null.
-otelCollectorAgentImage: "otel/opentelemetry-collector:0.86.0"
+otelCollectorAgentImage: "otel/opentelemetry-collector-contrib:0.94.0"
 # otelCollectorAgentConfigMap can be used to specify the name of an existing ConfigMap
 # from which an OpenTelemetry collector configuration should be read.
 # If a ConfigMap name is given, an OpenTelemetry collector agent sidecar container will
@@ -2217,7 +2217,7 @@ otelCollectorAgentImage: "otel/opentelemetry-collector:0.86.0"
 # that collector. The collector configuration is taken from a "otel-collector-config.yaml"
 # file defined in the ConfigMap and must contain an OTLP receiver using the gRPC protocol.
 # This property will only be used if "jaegerBackendExample.enabled" is set to "false".
-otelCollectorAgentConfigMap:
+otelCollectorAgentConfigMap: # "otel-collector-config"
 
 # Google Cloud Endpoints settings
 cloudEndpoints:
@@ -2275,7 +2275,7 @@ deviceCommunication:
 
     name: device-communication-api
     version: 1.0.0
-    image: gcr.io/<your-google-project-id>/hono-device-communication:2.5.2-SNAPSHOT
+    image: gcr.io/<your-google-project-id>/hono-device-communication:2.6.0-SNAPSHOT
 
     # Device communication API endpoints
     endpoints:
@@ -2383,7 +2383,7 @@ externalIngress:
 
 managementUi:
   enabled: true
-  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.5.2-SNAPSHOT
+  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.6.0-SNAPSHOT
   googleClientId:
 
   # resources contains the container's requests and limits for CPU and memory

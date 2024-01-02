@@ -552,6 +552,11 @@ Adds an OpenTelemetry Collector Agent container to a template spec.
       path: "/"
       port: health
     initialDelaySeconds: 5
+  resources:
+    limits:
+      memory: 250Mi
+    requests:
+      memory: 250Mi
   volumeMounts:
   - name: "otel-collector-config"
     mountPath: "/opt/hono/config"

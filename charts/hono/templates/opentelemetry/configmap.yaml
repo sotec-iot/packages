@@ -1,0 +1,59 @@
+{{- if and (not .Values.jaegerBackendExample.enabled) (eq .Values.otelCollectorAgentConfigMap "otel-collector-config")}}
+{{- $args := dict "dot" . "component" "otel-collector-config" "name" "otel-collector-config" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: hono
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "localhost:4317"
+    exporters:
+      googlecloud:
+        project: {{ .Values.googleProjectId | quote }}
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 65
+        spike_limit_percentage: 20
+      batch:
+      resourcedetection:
+        detectors: [gcp]
+        timeout: 10s
+      tail_sampling:
+        decision_wait: 30s
+        num_traces: 50000
+        expected_new_traces_per_sec: 0
+        policies:
+          [
+            {
+              name: error-policy,
+              type: status_code,
+              status_code: {status_codes: [ERROR]}
+            },
+            {
+              name: latency-policy,
+              type: latency,
+              latency: {threshold_ms: 150}
+            },
+            {
+              name: random-policy,
+              type: probabilistic,
+              probabilistic: {sampling_percentage: 0.1}
+            },
+          ]
+    extensions:
+      # exposes http://localhost:13133 by default which we can use to query the health status of collector. https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/healthcheckextension
+      health_check:
+    service:
+      extensions: [health_check]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch, tail_sampling]
+          exporters: [googlecloud]
+{{- end }}

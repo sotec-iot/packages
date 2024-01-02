@@ -59,6 +59,8 @@ spec:
         securityContext:
           privileged: false
         env:
+        - name: KUBERNETES_CONTAINER_NAME
+          value: {{ $args.component }}
         - name: JDK_JAVA_OPTIONS
           value: {{ .Values.adapters.mqtt.javaOptions | quote }}
         - name: QUARKUS_GOOGLE_CLOUD_PROJECT_ID
