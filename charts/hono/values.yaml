@@ -507,7 +507,7 @@ adapters:
     imageName: "<your-google-project-id>/hono-adapter-http"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.5.1-SNAPSHOT"
+    imageTag: "2.5.2-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -764,14 +764,14 @@ adapters:
     imageName: "<your-google-project-id>/hono-adapter-mqtt"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.5.1-SNAPSHOT"
+    imageTag: "2.5.2-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
     containerRegistry: "gcr.io"
     # javaOptions contains options to pass to the JVM when starting
     # up the service
-    javaOptions: "-XX:MinRAMPercentage=15 -XX:MaxRAMPercentage=15 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=30 -Dhono.registration.responseCacheMaxSize=3500 -Dhono.credentials.requestTimeout=500 -Dhono.command.requestTimeout=5000 -Dhono.commandRouter.requestTimeout=5000"
+    javaOptions: "-XX:MinRAMPercentage=80 -XX:MaxRAMPercentage=80 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=30 -Dhono.registration.responseCacheMaxSize=5000 -Dhono.credentials.requestTimeout=500 -Dhono.command.requestTimeout=5000 -Dhono.commandRouter.requestTimeout=5000"
     # cmdLineArgs contains additional arguments to be passed to the container's CMD.
     cmdLineArgs: []
     # quarkusConfigLocations contains resources that the Quarkus based variant of the component should read
@@ -814,7 +814,7 @@ adapters:
 
     horizontalPodAutoscaler:
       # if true then a horizontal pod autoscaler will be deployed.
-      enabled: true
+      enabled: false
       minReplicas: 1
       maxReplicas: 5
       metrics:
@@ -833,6 +833,7 @@ adapters:
 
     svc:
       annotations: {}
+      type: "LoadBalancer"
       loadBalancerIP:
 
     deployment:
@@ -912,7 +913,7 @@ authServer:
   imageName: "<your-google-project-id>/hono-service-auth"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  imageTag: "2.5.1-SNAPSHOT"
+  imageTag: "2.5.2-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -1333,7 +1334,7 @@ deviceRegistryExample:
     imageName: "<your-google-project-id>/hono-service-device-registry-jdbc"
     # imageTag contains the tag of the container image to deploy.
     # If not specified, the value of the honoImagesTag property is used.
-    imageTag: "2.5.1-SNAPSHOT"
+    imageTag: "2.5.2-SNAPSHOT"
     # containerRegistry contains the name of the container registry to pull
     # the image from.
     # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -1379,7 +1380,7 @@ deviceRegistryExample:
 
     horizontalPodAutoscaler:
       # if true then a horizontal pod autoscaler will be deployed.
-      enabled: true
+      enabled: false
       minReplicas: 1
       maxReplicas: 5
       metrics:
@@ -1424,6 +1425,9 @@ deviceRegistryExample:
           username:
           # The password to use for authenticating to the database
           password:
+          minimumPoolSize: 3
+          initialPoolSize: 3
+          maximumPoolSize: 5
           maximumIdleTime: 3600
         # the jdbc properties for write operations
         management:
@@ -1435,9 +1439,9 @@ deviceRegistryExample:
           username:
           # The password to use for authenticating to the database
           password:
-          maximumPoolSize: 50
-          minimumPoolSize: 10
-          initialPoolSize: 10
+          minimumPoolSize: 3
+          initialPoolSize: 3
+          maximumPoolSize: 5
           maximumIdleTime: 3600
     # tenant.jdbc contains the configuration properties for tenant registry
     # to connect to the database.
@@ -1453,6 +1457,9 @@ deviceRegistryExample:
           username:
           # The password to use for authenticating to the database
           password:
+          minimumPoolSize: 3
+          initialPoolSize: 3
+          maximumPoolSize: 5
           maximumIdleTime: 3600
         # the jdbc properties for write operations
         management:
@@ -1464,6 +1471,9 @@ deviceRegistryExample:
           username:
           # The password to use for authenticating to the database
           password:
+          minimumPoolSize: 3
+          initialPoolSize: 3
+          maximumPoolSize: 5
           maximumIdleTime: 3600
 
 # mongodb contains configuration properties for the example MongoDB instance to be used with the
@@ -1514,7 +1524,7 @@ commandRouterService:
   imageName: "<your-google-project-id>/hono-service-command-router"
   # imageTag contains the tag of the container image to deploy.
   # If not specified, the value of the honoImagesTag property is used.
-  imageTag: "2.5.1-SNAPSHOT"
+  imageTag: "2.5.2-SNAPSHOT"
   # containerRegistry contains the name of the container registry to pull
   # the image from.
   # If not specified, the value of the "honoContainerRegistry" property is used.
@@ -2170,7 +2180,7 @@ jaegerBackendExample:
     affinity: {}
 
   # env contains environment variables to set for the Jaeger all-in-one container.
-  # The default variables configure the container to keep up to 100000 traces in memory.
+  # The default variables configure the container to keep up to 10000 traces in memory.
   env:
   - name: "MEMORY_MAX_TRACES"
     value: "10000"
@@ -2265,7 +2275,7 @@ deviceCommunication:
 
     name: device-communication-api
     version: 1.0.0
-    image: gcr.io/<your-google-project-id>/hono-device-communication:2.5.1-SNAPSHOT
+    image: gcr.io/<your-google-project-id>/hono-device-communication:2.5.2-SNAPSHOT
 
     # Device communication API endpoints
     endpoints:
@@ -2373,7 +2383,7 @@ externalIngress:
 
 managementUi:
   enabled: true
-  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.5.1-SNAPSHOT
+  image: gcr.io/<your-google-project-id>/hono-service-management-ui:2.5.2-SNAPSHOT
   googleClientId:
 
   # resources contains the container's requests and limits for CPU and memory

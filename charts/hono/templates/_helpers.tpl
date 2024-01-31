@@ -685,7 +685,7 @@ The scope passed in is expected to be a dict with keys
 {{- $projectId := .projectId -}}
 - name: COM_APP_VERSION
   value: {{ $component.app.version  | quote}}
-- name: COM_PROJECT_ID
+- name: QUARKUS_GOOGLE_CLOUD_PROJECT_ID
   value: {{ $projectId  | quote}}
 - name: COM_OPENAPI_FILE_PATH
   value: {{ $component.api.openapi.file | quote }}

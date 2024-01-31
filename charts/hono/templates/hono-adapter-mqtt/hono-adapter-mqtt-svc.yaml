@@ -38,7 +38,9 @@ spec:
     {{- include "hono.nodePort" $mqttsArgs | nindent 4 }}
   selector:
     {{- include "hono.matchLabels" $args | nindent 4 }}
-  {{- include "hono.serviceType" . }}
+  {{- with .Values.adapters.mqtt.svc.type }}
+  type: {{ . | quote }}
+  {{- end }}
 {{- with .Values.adapters.mqtt.svc.loadBalancerIP }}
   loadBalancerIP: {{ . | quote }}
 {{- end }}
